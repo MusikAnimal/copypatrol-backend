@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import os.path
+
+import pymysql
+
+
+CONFIG = ".copypatrol.ini"
+
+
+def _opener(path: str, flags: int, /) -> int:
+    return os.open(path, flags, mode=0o600)
+
+
+def create_config(args: argparse.Namespace) -> None:
+    bak = f"{CONFIG}.testing.setup.bak"
+    if os.path.isfile(CONFIG):
+        if not os.path.isfile(bak):
+            os.rename(CONFIG, bak)
+        else:
+            os.remove(CONFIG)
+    contents = f"""\
+[copypatrol]
+ignore-list-title = example-does-not-exist
+
+[copypatrol:en.wikipedia.org]
+enabled = true
+namespaces = 0,2,118
+
+[copypatrol:es.wikipedia.org]
+enabled = true
+namespaces = 0,2
+
+[copypatrol:fr.wikipedia.org]
+enabled = false
+
+[client]
+drivername = {args.client_drivername}
+{f"username = {args.client_username}" if args.client_password else ""}
+{f"password = {args.client_password}" if args.client_password else ""}
+database = {args.client_database}
+{f"host = {args.client_host}" if args.client_host else ""}
+{f"port = {args.client_port}" if args.client_port else ""}
+
+[tca]
+domain = wikimedia.tii-sandbox.com
+key = {args.tca_key}
+"""
+    with open(CONFIG, "w", opener=_opener) as f:
+        f.write(contents)
+
+
+def create_database(args: argparse.Namespace) -> None:
+    with pymysql.connect(
+        host=args.client_host,
+        user=args.client_username,
+        password=args.client_password,
+        port=args.client_port,
+    ) as connection, connection.cursor() as cursor:
+        cursor.execute(f"DROP DATABASE {args.client_database}")
+        cursor.execute(
+            f"""\
+CREATE DATABASE {args.client_database}
+DEFAULT CHARACTER SET = utf8mb4
+"""
+        )
+        connection.commit()
+
+
+def main(*args: str) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--client-drivername", default="sqlite")
+    parser.add_argument("--client-username")
+    parser.add_argument("--client-password")
+    parser.add_argument("--client-database", default="copypatrol_tests")
+    parser.add_argument("--client-host")
+    parser.add_argument("--client-port", type=int)
+    parser.add_argument("--tca-key", required=True)
+    parsed_args = parser.parse_args()
+    create_config(parsed_args)
+    if "mysql" in parsed_args.client_drivername:
+        create_database(parsed_args)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

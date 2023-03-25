@@ -1,0 +1,29 @@
+name: tests
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    name: python 3.9
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: install poetry
+      uses: snok/install-poetry@v1
+    - name: checkout
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - name: install package
+      run: poetry install
+    - name: install pytest-github-actions-annotate-failures
+      run: poetry run python -m pip install pytest-github-actions-annotate-failures
+    - name: setup testing
+      run: poetry run testing/setup --tca-key fake-key
+    - name: test with pytest
+      run: poetry run pytest

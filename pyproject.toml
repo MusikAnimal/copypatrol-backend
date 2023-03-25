@@ -1,0 +1,106 @@
+[build-system]
+requires = ["poetry_core>=1.5.2"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+target-version = ["py39"]
+line-length = 79  # default: 88
+
+
+[tool.coverage]
+
+[tool.coverage.report]
+fail_under = 80
+
+[tool.coverage.run]
+plugins = [
+    "covdefaults",
+]
+
+
+[tool.isort]
+py_version = 39
+add_imports = ["from __future__ import annotations"]
+atomic = true
+ensure_newline_before_comments = true
+force_grid_wrap = 0
+include_trailing_comma = true
+lines_after_imports = 2
+multi_line_output = 3
+use_parentheses = true
+
+
+[tool.mypy]
+python_version = 3.9
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+enable_error_code = [
+    "ignore-without-code",
+]
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+    "mwparserfromhell.*",
+    "pywikibot.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+]
+disallow_untyped_defs = false
+
+
+[tool.poetry]
+authors = ["JJMC89"]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Wiki",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+description = "CopyPatrol backend bot"
+keywords = ["copyright", "wikipedia"]
+license = "MIT"
+name = "copypatrol-backend"
+readme = "README.md"
+repository = "https://github.com/JJMC89/copypatrol-backend"
+version = "0.0.0"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+mwparserfromhell = "0.6.4"
+pywikibot = {version = "8.0.2", extras = ["eventstreams", "mwoauth"]}
+pywikibot-extensions = "23.3.25"
+requests = "2.28.2"
+sqlalchemy = {version = "2.0.7", extras = ["pymysql"]}
+urllib3 = "1.26.15"
+
+[tool.poetry.dev-dependencies]
+covdefaults = "2.3.0"
+pytest = "7.2.2"
+pytest-cov = "4.0.0"
+pytest-mock = "3.10.0"
+pytest-randomly = "3.12.0"
+pytest-socket = "0.6.0"
+responses = "0.23.1"
+
+[tool.poetry.scripts]
+copypatrol-backend = "copypatrol_backend.cli:cli"
+
+
+[tool.pytest]
+
+[tool.pytest.ini_options]
+addopts = "--cov --no-cov-on-fail"

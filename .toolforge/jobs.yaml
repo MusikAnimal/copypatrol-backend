@@ -1,0 +1,18 @@
+- &defaults
+  name: dummy-defaults-job
+  command: echo this is a dummy job to set defaults
+  emails: onfailure
+  image: python3.9
+  no-filelog: true
+- name: store-changes
+  command: $HOME/backend/.venv/bin/copypatrol-backend store-changes
+  continuous: true
+  <<: *defaults
+- name: check-changes
+  command: $HOME/backend/.venv/bin/copypatrol-backend check-changes
+  continuous: true
+  <<: *defaults
+- name: reports
+  command: $HOME/backend/.venv/bin/copypatrol-backend reports
+  schedule: '3/5 * * * *'
+  <<: *defaults
